@@ -121,3 +121,4 @@ costs = price_engine(wp, pricing_table, region="nl_randstad")
 - Generated beelden + prompt metadata naast `after_state`.
 - Audit trail: welke overrides gebruiker deed.
 
+

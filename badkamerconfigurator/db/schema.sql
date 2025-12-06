@@ -73,3 +73,4 @@ CREATE TABLE IF NOT EXISTS approvals (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+

@@ -17,3 +17,4 @@
 ## Fallback
 - Als search faalt of weinig hits geeft, val terug op eigen catalogusfiltering. User blijft beslisser.
 
+

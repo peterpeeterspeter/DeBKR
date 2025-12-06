@@ -74,3 +74,4 @@ def fetch_catalog(db_path: Path = DB_PATH) -> List[Dict[str, Any]]:
     conn.close()
     return rows
 
+

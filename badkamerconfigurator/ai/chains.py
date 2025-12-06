@@ -163,3 +163,4 @@ def encode_image_file(path: Path) -> str:
     data = Path(path).read_bytes()
     return base64.standard_b64encode(data).decode("utf-8")
 
+

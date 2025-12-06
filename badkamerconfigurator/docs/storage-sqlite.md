@@ -33,3 +33,4 @@ items = fetch_catalog()  # lijst dicts
 ## Niet in git
 - Voeg `local.db` toe aan `.gitignore` als je deze in repo laat staan.
 
+

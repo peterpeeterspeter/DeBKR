@@ -30,3 +30,4 @@ Doel: aannemers/installateurs helpen met snelle validatie, betrouwbare data-invo
 - Export: PDF/Excel met werkplan + hoeveelheden + productlijst.
 - Contactactie: “Vraag site-inspectie aan” knop bij high-risk scenario.
 
+

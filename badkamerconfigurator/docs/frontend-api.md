@@ -79,3 +79,4 @@ export async function postPricing(body: any) {
 - Start API: `python server/api.py` (init DB bij first request).
 - Ingest mock catalog: `python scripts/ingest_catalog_sqlite.py data/mock/catalog.json`.
 
+

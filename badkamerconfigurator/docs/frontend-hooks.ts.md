@@ -140,3 +140,4 @@ export default function CatalogDemo() {
 - Deze voorbeeld-API verwacht dat je Next server `/api/*` proxyt naar de Flask server (port 5001). In dev kun je dit via `next.config.js` rewrites of handmatig fetchen met absolute URL (`http://localhost:5001/api/...`). Pas aan naar jouw setup.
 ```
 
+

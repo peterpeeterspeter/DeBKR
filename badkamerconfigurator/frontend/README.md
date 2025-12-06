@@ -13,3 +13,4 @@ Let op:
 - Dit is een skeleton; geen styling of state management lib gebruikt.
 - Pas anchors, style, constraints, render_intent aan je eigen flow aan.
 
+

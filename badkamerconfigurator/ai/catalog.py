@@ -89,3 +89,4 @@ def build_selection_payload(
     # ensure room image first in usage; returned separately by after_state_builder
     return products_by_category, product_image_paths
 
+

@@ -43,3 +43,4 @@
 - Geen echte file upload/API in deze skeleton; image_path is een placeholder string.
 - Geen daadwerkelijke Gemini-call in deze repo; alleen contract + mock flow.
 
+

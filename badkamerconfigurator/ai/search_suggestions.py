@@ -66,3 +66,4 @@ def search_products(query: str, max_results: int = 5, thinking_level: str = "low
             break
     return suggestions
 
+

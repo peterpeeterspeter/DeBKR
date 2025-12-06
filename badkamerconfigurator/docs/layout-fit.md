@@ -19,3 +19,4 @@
 4) `warnings = check_fit(room_width_cm, room_depth_cm, fixture_clearances)`.
 5) Toon waarschuwingen in UI; blokkeer of laat user bevestigen bij overschrijding.
 
+

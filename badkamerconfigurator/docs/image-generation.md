@@ -30,3 +30,4 @@
 - Nieuwe user-instructies → AfterState update → nieuwe image call.
 - Max 5 varianten per project (afgesproken).
 
+

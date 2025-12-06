@@ -40,3 +40,4 @@ python scripts/ingest_catalog_supabase.py catalog.csv --bucket catalog-images
 ## Fallback
 - Als upload faalt, controleer URL of sla `--skip-upload` over om alleen data te laden en upload later.
 
+

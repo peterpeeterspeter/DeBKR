@@ -35,3 +35,4 @@
 - Aanroep search → normaliseer → append aan suggestieslijst → UI toont → user kiest → voeg toe aan AfterState.products/reference_images.
 - Optioneel: sla geaccepteerde suggesties op in lokale catalogus (bron=search) voor reproduceerbaarheid.
 
+

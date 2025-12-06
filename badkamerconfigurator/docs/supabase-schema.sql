@@ -80,3 +80,4 @@ create table if not exists public.approvals (
 -- bucket: catalog-images (product key images)
 -- bucket: project-images (before/after/variants per project)
 
+

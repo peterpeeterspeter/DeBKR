@@ -104,3 +104,4 @@ class WorkPlan(BaseModel):
     cost_breakdown: Optional[Dict[str, Any]] = None
     disclaimer: Optional[str] = None
 
+

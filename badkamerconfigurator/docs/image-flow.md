@@ -41,3 +41,4 @@ with open("after_variant_1.jpg", "wb") as f:
 - Deze repo bevat geen actieve Gemini API-call in de server (offline). Gebruik `ai/image_generation.py` clientside/serverside waar keys beschikbaar zijn.
 - Respecteer resolutie/latency/kosten: kies passende `image_size` (1080p/4K) en aspect_ratio die bij de foto past.
 
+

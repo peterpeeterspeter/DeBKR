@@ -32,3 +32,4 @@ Doel: basis-UI voor catalogusfilters/selectie, 14-beelden teller, fit-check warn
 - Forceer verplichte categorieën (toilet, washbasin, shower, tiles) of markeer als required.
 - Bij fit-warnings: vraag gebruiker om bevestiging of herselectie.
 
+

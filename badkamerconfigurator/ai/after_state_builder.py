@@ -46,3 +46,4 @@ def build_after_state_from_selection(
 
     return after, reference_images
 
+

@@ -31,3 +31,4 @@
 - Productbeelden: Supabase Storage `catalog-images/{product_id}.jpg`.
 - Projectbeelden: `project-images/{project_id}/{variant}.jpg`.
 
+

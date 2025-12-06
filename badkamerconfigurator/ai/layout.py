@@ -59,3 +59,4 @@ def apply_layout(anchors: Dict[str, Dict[str, Any]], selections: Dict[str, Dict[
         }
     return layout
 
+

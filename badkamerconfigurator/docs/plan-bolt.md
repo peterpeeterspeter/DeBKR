@@ -25,3 +25,4 @@
 - Houd `.env` buiten repo; configureer secrets in Bolt.
 - Als backend niet publiek is, overweeg tunneling/proxy tijdens dev; of host Flask apart.
 
+

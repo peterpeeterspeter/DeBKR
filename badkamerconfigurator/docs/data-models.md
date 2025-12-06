@@ -16,3 +16,4 @@
   - `data/mock/catalog.json` (producten met beelden/prijs)  
   - `data/mock/pricing.json` (uurtarief, regio-multiplier, taakprijzen)
 
+
