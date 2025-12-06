@@ -1,25 +1,39 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import IntakePage from './pages/IntakePage'
 import CatalogPage from './pages/CatalogPage'
-import LayoutPage from './pages/LayoutPage'
 import VisualizePage from './pages/VisualizePage'
-import WorkPlanPage from './pages/WorkPlanPage'
 import PricingPage from './pages/PricingPage'
 import ReviewPage from './pages/ReviewPage'
 import AdminPage from './pages/AdminPage'
 import ProgressBar from './components/ProgressBar'
 
+function generateUserId() {
+  let userId = localStorage.getItem('bathroom_user_id')
+  if (!userId) {
+    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+    localStorage.setItem('bathroom_user_id', userId)
+  }
+  return userId
+}
+
 function App() {
   const [projectData, setProjectData] = useState({
     projectId: null,
-    userId: 'demo-user',
+    userId: null,
     beforeState: null,
     afterState: null,
     selectedProducts: [],
     workPlan: null,
     pricing: null
   })
+
+  useEffect(() => {
+    setProjectData(prev => ({
+      ...prev,
+      userId: generateUserId()
+    }))
+  }, [])
 
   return (
     <BrowserRouter>
@@ -40,16 +54,8 @@ function App() {
               element={<CatalogPage projectData={projectData} setProjectData={setProjectData} />}
             />
             <Route
-              path="/layout"
-              element={<LayoutPage projectData={projectData} setProjectData={setProjectData} />}
-            />
-            <Route
               path="/visualize"
               element={<VisualizePage projectData={projectData} setProjectData={setProjectData} />}
-            />
-            <Route
-              path="/workplan"
-              element={<WorkPlanPage projectData={projectData} setProjectData={setProjectData} />}
             />
             <Route
               path="/pricing"

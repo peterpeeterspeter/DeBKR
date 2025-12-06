@@ -53,7 +53,7 @@ export default function CatalogPage({ projectData, setProjectData }) {
       ...prev,
       selectedProducts
     }))
-    navigate('/layout')
+    navigate('/visualize')
   }
 
   const categories = [
@@ -193,7 +193,7 @@ export default function CatalogPage({ projectData, setProjectData }) {
           onClick={handleContinue}
           disabled={selectedProducts.length === 0}
         >
-          Ga verder naar layout
+          Genereer visualisatie
         </button>
       </div>
     </div>

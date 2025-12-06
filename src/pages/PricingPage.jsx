@@ -1,18 +1,56 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { calculatePricing } from '../api'
+import { supabase } from '../lib/supabase'
 
 export default function PricingPage({ projectData, setProjectData }) {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [pricing, setPricing] = useState(null)
+  const [workPlan, setWorkPlan] = useState(null)
 
-  const calculateMockPricing = () => {
-    const hours = projectData.workPlan?.total_estimated_hours || 79
+  const generateMockWorkPlan = () => {
+    const hasFloorTiles = projectData.selectedProducts?.some(p => p.category === 'floor_tile')
+    const hasWallTiles = projectData.selectedProducts?.some(p => p.category === 'wall_tile')
+    const hasToilet = projectData.selectedProducts?.some(p => p.category === 'toilet')
+    const hasWashbasin = projectData.selectedProducts?.some(p => p.category === 'washbasin')
+    const hasShower = projectData.selectedProducts?.some(p => p.category === 'shower')
+
+    const tasks = [
+      { name: 'Demontage oude installaties', hours: 8, volgorde: 1 },
+      { name: 'Afvoer en verwijdering', hours: 4, volgorde: 2 }
+    ]
+
+    if (hasFloorTiles || hasWallTiles) {
+      tasks.push({ name: 'Tegelwerk', hours: 24, volgorde: 3 })
+    }
+    if (hasToilet || hasWashbasin) {
+      tasks.push({ name: 'Sanitair installatie', hours: 16, volgorde: 4 })
+    }
+    if (hasShower) {
+      tasks.push({ name: 'Douchecabine installatie', hours: 12, volgorde: 5 })
+    }
+
+    tasks.push(
+      { name: 'Loodgieterswerk', hours: 16, volgorde: 6 },
+      { name: 'Elektrische werk', hours: 8, volgorde: 7 },
+      { name: 'Afwerking en opkuis', hours: 8, volgorde: 8 }
+    )
+
+    const totalHours = tasks.reduce((sum, t) => sum + t.hours, 0)
+
+    return {
+      tasks,
+      total_estimated_hours: totalHours,
+      estimated_days: Math.ceil(totalHours / 8)
+    }
+  }
+
+  const calculateMockPricing = (plan) => {
+    const hours = plan.total_estimated_hours
     const laborRate = 75
     const regionMultiplier = 1.05
-    const materialCost = projectData.selectedProducts?.reduce((sum, p) => sum + (p.price_eur || 0), 0) || 2500
+    const materialCost = projectData.selectedProducts?.reduce((sum, p) => sum + (p.price_eur || 0), 0) || 0
 
     const laborCost = hours * laborRate * regionMultiplier
     const contingency = (laborCost + materialCost) * 0.1
@@ -23,46 +61,71 @@ export default function PricingPage({ projectData, setProjectData }) {
       material_cost: materialCost.toFixed(2),
       contingency: contingency.toFixed(2),
       disposal_fee: 200,
-      total: total.toFixed(2)
+      total: total.toFixed(2),
+      total_hours: hours
     }
   }
 
   useEffect(() => {
-    setPricing(calculateMockPricing())
+    const plan = generateMockWorkPlan()
+    setWorkPlan(plan)
+    setPricing(calculateMockPricing(plan))
   }, [])
 
-  const handleCalculate = async () => {
-    if (!projectData.workPlan) {
-      setError('Genereer eerst het werkplan')
-      return
-    }
+  const handleSavePricing = async () => {
+    if (!workPlan || !pricing) return
 
     setLoading(true)
-    setError(null)
-
     try {
-      const result = await calculatePricing(
-        projectData.projectId,
-        projectData.workPlan,
-        'vlaanderen',
-        1.0
-      )
+      const { error: workPlanError } = await supabase
+        .from('work_plans')
+        .insert([{
+          project_id: projectData.projectId,
+          data: workPlan
+        }])
 
-      setPricing(result.costs)
+      if (workPlanError && !workPlanError.message.includes('duplicate')) {
+        throw new Error('Failed to save work plan: ' + workPlanError.message)
+      }
+
+      const { error: pricingError } = await supabase
+        .from('pricing_generated')
+        .insert([{
+          project_id: projectData.projectId,
+          region: 'vlaanderen',
+          data: pricing
+        }])
+
+      if (pricingError && !pricingError.message.includes('duplicate')) {
+        throw new Error('Failed to save pricing: ' + pricingError.message)
+      }
+
+      const { error: updateError } = await supabase
+        .from('projects')
+        .update({ status: 'pending', updated_at: new Date().toISOString() })
+        .eq('id', projectData.projectId)
+
+      if (updateError) {
+        throw new Error('Failed to update project status: ' + updateError.message)
+      }
+
       setProjectData(prev => ({
         ...prev,
-        pricing: result.costs
+        workPlan,
+        pricing,
+        status: 'pending'
       }))
+
+      navigate('/review')
     } catch (err) {
-      setError(err.message)
-      setPricing(calculateMockPricing())
+      setError('Fout bij opslaan: ' + err.message)
     } finally {
       setLoading(false)
     }
   }
 
   const handleSubmitForApproval = () => {
-    navigate('/review')
+    handleSavePricing()
   }
 
   return (
@@ -79,15 +142,33 @@ export default function PricingPage({ projectData, setProjectData }) {
         Prijzen zijn exclusief BTW.
       </div>
 
-      {!projectData.pricing && (
-        <button
-          className="btn btn-primary"
-          onClick={handleCalculate}
-          disabled={loading}
-          style={{ marginBottom: '2rem' }}
-        >
-          {loading ? 'Berekenen...' : 'Bereken Prijs'}
-        </button>
+      {workPlan && (
+        <div style={{ marginBottom: '2rem', background: '#f8f9fa', padding: '1.5rem', borderRadius: '8px' }}>
+          <h3 style={{ marginBottom: '1rem' }}>Werkplan</h3>
+          <table style={{ width: '100%' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #ddd' }}>
+                <th style={{ textAlign: 'left', padding: '0.5rem' }}>Taak</th>
+                <th style={{ textAlign: 'right', padding: '0.5rem' }}>Uren</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workPlan.tasks.map((task, index) => (
+                <tr key={index} style={{ borderBottom: '1px solid #e0e0e0' }}>
+                  <td style={{ padding: '0.5rem' }}>{task.name}</td>
+                  <td style={{ textAlign: 'right', padding: '0.5rem' }}>{task.hours}u</td>
+                </tr>
+              ))}
+              <tr style={{ fontWeight: 'bold', borderTop: '2px solid #2c3e50' }}>
+                <td style={{ padding: '0.5rem' }}>Totaal</td>
+                <td style={{ textAlign: 'right', padding: '0.5rem' }}>{workPlan.total_estimated_hours}u</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style={{ marginTop: '1rem', color: '#7f8c8d' }}>
+            Geschatte duur: {workPlan.estimated_days} werkdagen
+          </p>
+        </div>
       )}
 
       {pricing && (
@@ -126,17 +207,21 @@ export default function PricingPage({ projectData, setProjectData }) {
             <ul>
               <li>Regio: Vlaanderen (multiplier 1.05)</li>
               <li>Arbeidsuurprijs: €75/uur</li>
-              <li>Totaal uren: {projectData.workPlan?.total_estimated_hours || 79}</li>
+              <li>Totaal uren: {pricing.total_hours}</li>
               <li>Aantal producten: {projectData.selectedProducts?.length || 0}</li>
             </ul>
           </div>
 
           <div style={{ marginTop: '2rem', textAlign: 'right' }}>
-            <button className="btn btn-secondary" onClick={() => navigate('/workplan')} style={{ marginRight: '1rem' }}>
-              Terug
+            <button className="btn btn-secondary" onClick={() => navigate('/visualize')} style={{ marginRight: '1rem' }}>
+              Terug naar visualisatie
             </button>
-            <button className="btn btn-success" onClick={handleSubmitForApproval}>
-              Indienen voor goedkeuring
+            <button
+              className="btn btn-success"
+              onClick={handleSubmitForApproval}
+              disabled={loading}
+            >
+              {loading ? 'Opslaan...' : 'Indienen voor goedkeuring'}
             </button>
           </div>
         </div>

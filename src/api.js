@@ -1,54 +1,105 @@
-const API_BASE = ''
+import { supabase } from './lib/supabase'
 
 export async function createProject(userId, region = 'vlaanderen') {
-  const res = await fetch(`${API_BASE}/api/projects`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id: userId, region })
-  })
-  if (!res.ok) throw new Error('Failed to create project')
-  return res.json()
+  const { data, error } = await supabase
+    .from('projects')
+    .insert([{ user_id: userId, region, status: 'draft' }])
+    .select()
+    .single()
+
+  if (error) throw new Error('Failed to create project: ' + error.message)
+  return data
 }
 
 export async function uploadFile(file, userId, projectId) {
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('user_id', userId)
-  formData.append('project_id', projectId)
+  const fileExt = file.name.split('.').pop()
+  const fileName = `${userId}/${projectId}/before.${fileExt}`
 
-  const res = await fetch(`${API_BASE}/api/upload`, {
-    method: 'POST',
-    body: formData
-  })
-  if (!res.ok) throw new Error('Failed to upload file')
-  return res.json()
+  const { data, error } = await supabase.storage
+    .from('user-uploads')
+    .upload(fileName, file, { upsert: true })
+
+  if (error) throw new Error('Failed to upload file: ' + error.message)
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('user-uploads')
+    .getPublicUrl(fileName)
+
+  return { file_path: fileName, url: publicUrl }
 }
 
 export async function analyzeBeforeState(projectId, orientationHint, dimensionsCm, imagePath, forceMock = false) {
-  const res = await fetch(`${API_BASE}/api/before`, {
+  if (forceMock) {
+    const mockBeforeState = {
+      dimensions_cm: dimensionsCm,
+      fixtures: {
+        toilet: { present: true, position: 'back_left', type: 'wall_mounted' },
+        washbasin: { present: true, position: 'front_right', type: 'countertop' },
+        shower: { present: true, position: 'back_right', type: 'walk_in' },
+        bathtub: { present: false }
+      },
+      plumbing_estimate: {
+        water_inlet_likely: 'back_wall',
+        waste_outlet_likely: 'back_wall_left',
+        confidence: 'medium'
+      }
+    }
+
+    const mockAnchors = [
+      { x: 0.2, y: 0.8, fixture: 'toilet' },
+      { x: 0.8, y: 0.2, fixture: 'washbasin' },
+      { x: 0.8, y: 0.8, fixture: 'shower' }
+    ]
+
+    const { error } = await supabase
+      .from('before_states')
+      .insert([{ project_id: projectId, data: mockBeforeState }])
+
+    if (error) throw new Error('Failed to save before state: ' + error.message)
+
+    return { before_state: mockBeforeState, anchors: mockAnchors }
+  }
+
+  const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-before`
+  const res = await fetch(apiUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify({
       project_id: projectId,
       orientation_hint: orientationHint,
       dimensions_cm: dimensionsCm,
-      image_path: imagePath,
-      force_mock: forceMock
+      image_path: imagePath
     })
   })
-  if (!res.ok) throw new Error('Failed to analyze before state')
+
+  if (!res.ok) {
+    const error = await res.text()
+    throw new Error('Failed to analyze before state: ' + error)
+  }
+
   return res.json()
 }
 
 export async function fetchCatalog(filters = {}) {
-  const params = new URLSearchParams()
-  if (filters.category) params.append('category', filters.category)
-  if (filters.min_price) params.append('min_price', filters.min_price)
-  if (filters.max_price) params.append('max_price', filters.max_price)
+  let query = supabase.from('catalog_items').select('*')
 
-  const res = await fetch(`${API_BASE}/api/catalog?${params}`)
-  if (!res.ok) throw new Error('Failed to fetch catalog')
-  return res.json()
+  if (filters.category) {
+    query = query.eq('category', filters.category)
+  }
+  if (filters.min_price) {
+    query = query.gte('price_eur', filters.min_price)
+  }
+  if (filters.max_price) {
+    query = query.lte('price_eur', filters.max_price)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw new Error('Failed to fetch catalog: ' + error.message)
+  return data
 }
 
 export async function submitSelection(projectId, selectedIds, roomImagePath, anchors, style = {}, constraints = {}, renderIntent = {}) {
@@ -121,9 +172,14 @@ export async function calculatePricing(projectId, workPlan, region = 'vlaanderen
 }
 
 export async function getProject(projectId) {
-  const res = await fetch(`${API_BASE}/api/projects/${projectId}`)
-  if (!res.ok) throw new Error('Failed to fetch project')
-  return res.json()
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', projectId)
+    .single()
+
+  if (error) throw new Error('Failed to fetch project: ' + error.message)
+  return data
 }
 
 export async function getPendingProjects() {
