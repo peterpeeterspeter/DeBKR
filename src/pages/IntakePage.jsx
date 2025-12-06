@@ -12,6 +12,7 @@ export default function IntakePage({ projectData, setProjectData }) {
   const [error, setError] = useState(null)
   const [beforeState, setBeforeState] = useState(null)
   const [anchors, setAnchors] = useState(null)
+  const [useAI, setUseAI] = useState(true)
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0]
@@ -50,7 +51,7 @@ export default function IntakePage({ projectData, setProjectData }) {
         orientationHint,
         dimensions,
         uploadResult.file_path,
-        true
+        !useAI
       )
 
       setBeforeState(result.before_state)
@@ -151,6 +152,29 @@ export default function IntakePage({ projectData, setProjectData }) {
               onChange={(e) => setDimensions(prev => ({ ...prev, height: parseInt(e.target.value) }))}
               disabled={loading}
             />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={useAI}
+                onChange={(e) => setUseAI(e.target.checked)}
+                disabled={loading}
+                style={{ marginRight: '0.5rem' }}
+              />
+              Gebruik AI analyse (Gemini 2.0 Flash met reasoning level HIGH)
+            </label>
+            {useAI && (
+              <p style={{ fontSize: '0.85rem', color: '#7f8c8d', marginTop: '0.5rem' }}>
+                Vereist GEMINI_API_KEY. Gebruikt deep reasoning voor nauwkeurige fixture detectie en leidingen inschatting.
+              </p>
+            )}
+            {!useAI && (
+              <p style={{ fontSize: '0.85rem', color: '#e67e22', marginTop: '0.5rem' }}>
+                Mock mode: gebruikt standaard fixture posities zonder AI analyse.
+              </p>
+            )}
           </div>
 
           <button

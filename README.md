@@ -192,18 +192,30 @@ python badkamerconfigurator/scripts/ingest_catalog_supabase.py catalog.csv
 
 ### With GEMINI_API_KEY
 
-- Real-time bathroom analysis
-- Fixture detection
-- Plumbing estimation
-- Work plan generation
-- Structure-preserving image generation
+The system uses **Gemini 2.0 Flash Experimental** with **reasoning level HIGH** for intelligent bathroom analysis:
+
+**Before-state Analysis:**
+- Uses `ThinkingBudget.HIGH` for deep reasoning and accurate fixture detection
+- Analyzes bathroom photos with structured JSON output via `response_schema`
+- Automatically detects toilet, washbasin, shower, bathtub with positions
+- Intelligent estimation of water inlet and waste outlet positions
+- Provides confidence levels (low/medium/high) for plumbing estimates
+- Detects room shape (rectangular, l_shaped, irregular)
+- Identifies entrance position and dimensions
+
+**Other AI Features:**
+- Work plan generation via LangChain workflows
+- Structure-preserving image generation (preserves walls, doors, windows)
+- Variant generation (up to 5 different visualizations)
+
+The reasoning mode ensures accurate analysis even in complex bathroom layouts.
 
 ### Without GEMINI_API_KEY (Mock Mode)
 
-- Mock before-state analysis
+- Mock before-state analysis with default fixture positions
 - Manual product selection
-- Example work plans
-- No image generation
+- Example work plans with standard phases
+- No AI-powered image generation
 
 ## Development
 
@@ -248,27 +260,71 @@ project/
 - **File uploads**: Max 16MB per file
 - **Image generation**: Requires GEMINI_API_KEY, takes 30-60 seconds
 
+## Testing
+
+### Test Gemini Analysis
+
+Test the before-state analysis with or without AI:
+
+```bash
+# Test with mock mode (no API key required)
+python badkamerconfigurator/scripts/test_gemini_analysis.py
+
+# Test with real API (requires GEMINI_API_KEY)
+export GEMINI_API_KEY=your_key_here
+python badkamerconfigurator/scripts/test_gemini_analysis.py
+
+# Show the BeforeState schema
+python badkamerconfigurator/scripts/test_gemini_analysis.py --schema
+```
+
+### Test Complete Flow
+
+```bash
+# Load mock catalog
+python badkamerconfigurator/scripts/load_mock_catalog.py
+
+# Start backend
+python badkamerconfigurator/server/api.py
+
+# In another terminal, start frontend
+npm run dev
+
+# Navigate to http://localhost:3000
+```
+
 ## Troubleshooting
 
 ### Backend won't start
 - Check Python version (3.9+)
 - Verify all environment variables are set
 - Run `pip install -r requirements.txt`
+- Install google-genai: `pip install google-genai>=1.0.0`
 
 ### Frontend won't start
 - Check Node version (18+)
 - Run `npm install`
-- Clear node_modules and reinstall
+- Clear node_modules and reinstall if needed
 
 ### Database errors
-- Verify Supabase credentials
-- Check migrations were applied
-- Ensure RLS policies are active
+- Verify Supabase credentials in `.env`
+- Check migrations were applied automatically
+- Ensure RLS policies are active (view in Supabase dashboard)
+- Check storage buckets exist
 
 ### AI features not working
-- Verify GEMINI_API_KEY is set
-- Check API quota limits
-- Try mock mode (force_mock=true)
+- Verify `GEMINI_API_KEY` is set in `.env`
+- Check API quota limits at https://aistudio.google.com
+- Test with mock mode first (uncheck "Gebruik AI analyse")
+- Check model availability: `gemini-2.0-flash-exp`
+- View detailed error logs in Flask console
+
+### Gemini Reasoning Issues
+- Ensure you're using `google-genai>=1.0.0` (not `google-generativeai`)
+- ThinkingBudget.HIGH requires Gemini 2.0 Flash Experimental
+- Structured output requires recent API version
+- Check image file size (max 16MB)
+- Verify image format (JPEG, PNG supported)
 
 ## License
 
