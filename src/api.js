@@ -3,7 +3,7 @@ import { supabase } from './lib/supabase'
 export async function createProject(userId, region = 'vlaanderen') {
   const { data, error } = await supabase
     .from('projects')
-    .insert([{ user_id: userId, region, status: 'draft' }])
+    .insert([{ anonymous_user_id: userId, region, status: 'draft' }])
     .select()
     .single()
 
