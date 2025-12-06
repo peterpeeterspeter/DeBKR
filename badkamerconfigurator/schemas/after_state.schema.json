@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://badkamerconfigurator.example/schemas/after_state.schema.json",
+  "title": "AfterState",
+  "description": "Desired end-state after renovation. References catalog product IDs and planned placement.",
+  "type": "object",
+  "required": ["layout", "products", "style"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["0.1.0"]
+    },
+    "reference_before_state_id": {
+      "type": "string",
+      "description": "Links to the validated BeforeState this design builds upon."
+    },
+    "layout": {
+      "type": "object",
+      "description": "Planned spatial layout respecting structural constraints.",
+      "required": ["orientation_hint", "fixtures"],
+      "properties": {
+        "orientation_hint": {
+          "type": "string",
+          "description": "Same convention as BeforeState for consistent references."
+        },
+        "fixtures": {
+          "type": "object",
+          "properties": {
+            "toilet": { "$ref": "#/$defs/placement" },
+            "washbasin": { "$ref": "#/$defs/placement" },
+            "shower": { "$ref": "#/$defs/placement" },
+            "bathtub": { "$ref": "#/$defs/placement" },
+            "radiator": { "$ref": "#/$defs/placement" },
+            "washing_machine": { "$ref": "#/$defs/placement" }
+          }
+        },
+        "lighting": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/placement" }
+        }
+      }
+    },
+    "products": {
+      "type": "object",
+      "description": "Selected catalog items per category. Must match image prompts.",
+      "properties": {
+        "flooring": { "$ref": "#/$defs/product_ref" },
+        "wall_tiles": { "$ref": "#/$defs/product_ref" },
+        "toilet": { "$ref": "#/$defs/product_ref" },
+        "washbasin": { "$ref": "#/$defs/product_ref" },
+        "shower": { "$ref": "#/$defs/product_ref" },
+        "bathtub": { "$ref": "#/$defs/product_ref" },
+        "radiator": { "$ref": "#/$defs/product_ref" },
+        "lighting": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/product_ref" }
+        },
+        "accessories": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/product_ref" }
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "description": "Design intent to steer image generation.",
+      "properties": {
+        "name": { "type": "string", "description": "e.g., Scandinavian, industrial." },
+        "color_palette": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "references": {
+          "type": "array",
+          "description": "Optional reference image URIs.",
+          "items": { "type": "string", "format": "uri" }
+        },
+        "lighting_temperature_kelvin": { "type": "number", "minimum": 1000, "maximum": 10000 }
+      }
+    },
+    "structural_constraints": {
+      "type": "object",
+      "description": "Non-negotiable constraints that must be respected by generation and planning.",
+      "properties": {
+        "keep_walls": { "type": "boolean", "default": true },
+        "keep_openings": { "type": "boolean", "default": true },
+        "allowed_plumbing_moves_m": {
+          "type": "number",
+          "description": "Maximum allowed horizontal move for drains/water lines."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "render_intent": {
+      "type": "object",
+      "description": "Parameters for image generation or 3D rendering.",
+      "properties": {
+        "resolution": { "type": "string", "enum": ["1080p", "4k"] },
+        "aspect_ratio": { "type": "string", "enum": ["4:3", "16:9", "1:1"] },
+        "preserve_structure": { "type": "boolean", "default": true },
+        "num_variations": { "type": "integer", "minimum": 1, "maximum": 6 }
+      }
+    },
+    "disclaimer": {
+      "type": "string",
+      "description": "Reminder that visuals are indicative; execution depends on feasibility."
+    }
+  },
+  "$defs": {
+    "placement": {
+      "type": "object",
+      "required": ["position", "product_id"],
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "description": "References a product in the catalog."
+        },
+        "position": {
+          "type": "string",
+          "description": "Relative position using the shared orientation_hint."
+        },
+        "mount_type": { "type": "string" },
+        "clearances_cm": {
+          "type": "object",
+          "properties": {
+            "left": { "type": "number" },
+            "right": { "type": "number" },
+            "front": { "type": "number" }
+          }
+        }
+      }
+    },
+    "product_ref": {
+      "type": "object",
+      "required": ["product_id"],
+      "properties": {
+        "product_id": { "type": "string" },
+        "variant": { "type": "string", "description": "Color/finish/size variant code." },
+        "quantity": { "type": "number", "minimum": 0 },
+        "price_eur": {
+          "type": "number",
+          "description": "Optional cached price at selection time for transparency."
+        }
+      }
+    }
+  }
+}
+

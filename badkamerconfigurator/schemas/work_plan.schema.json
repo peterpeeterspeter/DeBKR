@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://badkamerconfigurator.example/schemas/work_plan.schema.json",
+  "title": "WorkPlan",
+  "description": "Structured list of work phases derived from the delta between BeforeState and AfterState. Gemini proposes tasks/quantities; backend applies pricing.",
+  "type": "object",
+  "required": ["phases", "total_estimated_hours"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["0.1.0"]
+    },
+    "source_before_state_id": {
+      "type": "string",
+      "description": "ID of validated BeforeState."
+    },
+    "source_after_state_id": {
+      "type": "string",
+      "description": "ID of chosen AfterState."
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["phase", "name", "tasks"],
+        "properties": {
+          "phase": { "type": "integer", "minimum": 1 },
+          "name": { "type": "string" },
+          "tasks": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/task" }
+          },
+          "estimated_hours": { "type": "number", "minimum": 0 },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "total_estimated_hours": { "type": "number", "minimum": 0 },
+    "risk_flags": {
+      "type": "array",
+      "description": "High-risk items to surface to users and contractors.",
+      "items": { "type": "string" }
+    },
+    "pricing_inputs": {
+      "type": "object",
+      "description": "Rates applied by backend, not by the model.",
+      "properties": {
+        "labor_hour_eur": { "type": "number" },
+        "disposal_fee_eur": { "type": "number" },
+        "contingency_percent": { "type": "number" },
+        "region": { "type": "string" }
+      }
+    },
+    "cost_breakdown": {
+      "type": "object",
+      "description": "Calculated by backend; model does not set prices.",
+      "properties": {
+        "labor_eur": { "type": "number" },
+        "materials_eur": { "type": "number" },
+        "contingency_eur": { "type": "number" },
+        "margin_eur": { "type": "number" },
+        "total_eur": { "type": "number" }
+      }
+    },
+    "disclaimer": {
+      "type": "string",
+      "description": "Explicit statement that the plan is indicative pending site inspection."
+    }
+  },
+  "$defs": {
+    "task": {
+      "type": "object",
+      "required": ["task", "category"],
+      "properties": {
+        "task": { "type": "string", "description": "Human-readable task description." },
+        "category": {
+          "type": "string",
+          "enum": [
+            "demolition",
+            "plumbing",
+            "electrical",
+            "surface_prep",
+            "tiling",
+            "sanitary_install",
+            "painting",
+            "ventilation",
+            "cleanup",
+            "other"
+          ]
+        },
+        "quantity": { "type": "number", "minimum": 0 },
+        "unit": { "type": "string", "description": "e.g., m2, m, pcs, hrs." },
+        "complexity_flag": { "type": "string", "enum": ["low", "medium", "high"] },
+        "estimated_hours": { "type": "number", "minimum": 0 },
+        "dependencies": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
+

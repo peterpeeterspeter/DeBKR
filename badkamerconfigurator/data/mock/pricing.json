@@ -1,0 +1,21 @@
+{
+  "currency": "EUR",
+  "labor_hour_base": 75,
+  "region_multiplier": {
+    "nl_randstad": 1.2,
+    "nl_overig": 1.0,
+    "be_vlaanderen": 1.05
+  },
+  "disposal_fee_eur": 200,
+  "contingency_percent": 10,
+  "tasks": {
+    "demolition_tile_per_m2": 18,
+    "tiling_per_m2": 45,
+    "plumbing_move_per_meter": 120,
+    "shower_install": 180,
+    "toilet_install": 160,
+    "washbasin_install": 140,
+    "lighting_point": 85
+  }
+}
+

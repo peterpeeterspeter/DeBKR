@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://badkamerconfigurator.example/schemas/before_state.schema.json",
+  "title": "BeforeState",
+  "description": "Technical snapshot of the current bathroom prior to renovation. Includes AI estimates that must be user-validated.",
+  "type": "object",
+  "required": ["space", "fixtures", "plumbing_estimate", "validation"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["0.1.0"]
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the source photo(s) were uploaded."
+    },
+    "source_media": {
+      "type": "array",
+      "description": "URIs of reference photos or scans used for the analysis.",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "space": {
+      "type": "object",
+      "description": "Geometric information about the room.",
+      "required": ["dimensions_cm", "floorplan_shape", "entrance"],
+      "properties": {
+        "orientation_hint": {
+          "type": "string",
+          "description": "Human-readable orientation reference such as 'front wall = wall with window'."
+        },
+        "dimensions_cm": {
+          "type": "object",
+          "description": "Validated interior dimensions in centimeters.",
+          "required": ["width", "depth"],
+          "properties": {
+            "width": { "type": "number", "minimum": 50 },
+            "depth": { "type": "number", "minimum": 50 },
+            "height": { "type": "number", "minimum": 150 }
+          }
+        },
+        "floorplan_shape": {
+          "type": "string",
+          "enum": ["rectangular", "l-shape", "irregular", "unknown"]
+        },
+        "entrance": {
+          "type": "object",
+          "description": "Door position relative to orientation.",
+          "properties": {
+            "position": { "type": "string" },
+            "width_cm": { "type": "number", "minimum": 50 }
+          }
+        },
+        "openings": {
+          "type": "array",
+          "description": "Windows or other openings.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["window", "fanlight", "other"] },
+              "position": { "type": "string" },
+              "size_cm": {
+                "type": "object",
+                "properties": {
+                  "width": { "type": "number", "minimum": 1 },
+                  "height": { "type": "number", "minimum": 1 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "fixtures": {
+      "type": "object",
+      "description": "Detected or declared sanitary fixtures.",
+      "properties": {
+        "toilet": {
+          "$ref": "#/$defs/fixture"
+        },
+        "washbasin": {
+          "$ref": "#/$defs/fixture"
+        },
+        "shower": {
+          "$ref": "#/$defs/fixture"
+        },
+        "bathtub": {
+          "$ref": "#/$defs/fixture"
+        },
+        "radiator": {
+          "$ref": "#/$defs/fixture"
+        },
+        "washing_machine": {
+          "$ref": "#/$defs/fixture"
+        }
+      }
+    },
+    "materials": {
+      "type": "object",
+      "description": "Surface materials in the current state.",
+      "properties": {
+        "floor": { "$ref": "#/$defs/material_surface" },
+        "walls": { "$ref": "#/$defs/material_surface" },
+        "ceiling": { "$ref": "#/$defs/material_surface" }
+      }
+    },
+    "plumbing_estimate": {
+      "type": "object",
+      "description": "AI estimate for water and waste routing. Must be validated by user or professional.",
+      "required": ["water_inlet_likely", "waste_outlet_likely", "confidence"],
+      "properties": {
+        "water_inlet_likely": {
+          "type": "string",
+          "enum": ["wall_left", "wall_right", "wall_back", "wall_front", "floor", "ceiling", "unknown"]
+        },
+        "waste_outlet_likely": {
+          "type": "string",
+          "enum": ["floor_left", "floor_right", "floor_back", "floor_front", "wall", "unknown"]
+        },
+        "ventilation_hint": {
+          "type": "string",
+          "description": "Observed or inferred ventilation path."
+        },
+        "notes": { "type": "string" },
+        "evidence": {
+          "type": "array",
+          "description": "Short evidence statements that justify the estimate.",
+          "items": { "type": "string" }
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        }
+      }
+    },
+    "electricity_estimate": {
+      "type": "object",
+      "description": "Optional electrical inference to inform later work.",
+      "properties": {
+        "outlet_locations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "lighting_points": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "description": "Known or suspected risks that affect cost or feasibility.",
+      "items": { "type": "string" }
+    },
+    "validation": {
+      "type": "object",
+      "description": "User or professional validation status of AI estimates.",
+      "required": ["user_confirmed"],
+      "properties": {
+        "user_confirmed": { "type": "boolean" },
+        "confirmed_at": { "type": "string", "format": "date-time" },
+        "confirmed_by": { "type": "string" },
+        "overrides": {
+          "type": "object",
+          "description": "Manual corrections to AI estimates.",
+          "properties": {
+            "plumbing_estimate": { "type": "object" },
+            "fixtures": { "type": "object" },
+            "dimensions_cm": { "type": "object" }
+          }
+        }
+      }
+    },
+    "disclaimer": {
+      "type": "string",
+      "description": "Explicit reminder that this state is indicative; hidden structures are unknown."
+    }
+  },
+  "$defs": {
+    "fixture": {
+      "type": "object",
+      "properties": {
+        "present": { "type": "boolean" },
+        "position": {
+          "type": "string",
+          "description": "Relative position using the chosen orientation reference."
+        },
+        "size_cm": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "number", "minimum": 1 },
+            "depth": { "type": "number", "minimum": 1 },
+            "height": { "type": "number", "minimum": 1 }
+          }
+        },
+        "mount_type": { "type": "string", "description": "e.g., wall-hung, floor-standing." },
+        "notes": { "type": "string" }
+      }
+    },
+    "material_surface": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "description": "e.g., tile, paint, wood, pvc." },
+        "coverage_m2": { "type": "number", "minimum": 0 },
+        "condition": { "type": "string", "description": "qualitative condition assessment." }
+      }
+    }
+  }
+}
+
