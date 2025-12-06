@@ -163,7 +163,7 @@ export default function IntakePage({ projectData, setProjectData }) {
                 disabled={loading}
                 style={{ marginRight: '0.5rem' }}
               />
-              Gebruik AI analyse (Gemini 2.0 Flash met reasoning level HIGH)
+              Gebruik AI analyse (Gemini 3 Pro met thinking_level HIGH)
             </label>
             {useAI && (
               <p style={{ fontSize: '0.85rem', color: '#7f8c8d', marginTop: '0.5rem' }}>

@@ -151,8 +151,13 @@ def analyze_before(
     dimensions_cm: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Calls Gemini Pro with reasoning level high to analyze bathroom photo.
+    Calls Gemini 3 Pro with thinking_level='high' to analyze bathroom photo.
     Returns structured BeforeState JSON using response schema.
+
+    Uses gemini-3-pro-preview with:
+    - thinking_level: "high" for deep reasoning
+    - response_mime_type: "application/json" for structured output
+    - response_schema: enforces BeforeState JSON structure
     """
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
@@ -178,15 +183,15 @@ def analyze_before(
 
     generation_config = types.GenerateContentConfig(
         thinking_config=types.ThinkingConfig(
-            thinking_budget=types.ThinkingBudget.HIGH
+            thinking_level="high"
         ),
         response_mime_type="application/json",
         response_schema=BEFORE_STATE_SCHEMA,
-        temperature=0.2
+        temperature=1.0
     )
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash-exp",
+        model="gemini-3-pro-preview",
         contents=contents,
         config=generation_config
     )

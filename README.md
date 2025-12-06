@@ -192,23 +192,24 @@ python badkamerconfigurator/scripts/ingest_catalog_supabase.py catalog.csv
 
 ### With GEMINI_API_KEY
 
-The system uses **Gemini 2.0 Flash Experimental** with **reasoning level HIGH** for intelligent bathroom analysis:
+The system uses **Gemini 3 Pro** with **thinking_level="high"** for intelligent bathroom analysis:
 
 **Before-state Analysis:**
-- Uses `ThinkingBudget.HIGH` for deep reasoning and accurate fixture detection
+- Uses `thinking_level: "high"` for deep reasoning and accurate fixture detection
 - Analyzes bathroom photos with structured JSON output via `response_schema`
 - Automatically detects toilet, washbasin, shower, bathtub with positions
 - Intelligent estimation of water inlet and waste outlet positions
 - Provides confidence levels (low/medium/high) for plumbing estimates
 - Detects room shape (rectangular, l_shaped, irregular)
 - Identifies entrance position and dimensions
+- Model: `gemini-3-pro-preview` with 1M token context window
 
 **Other AI Features:**
 - Work plan generation via LangChain workflows
 - Structure-preserving image generation (preserves walls, doors, windows)
 - Variant generation (up to 5 different visualizations)
 
-The reasoning mode ensures accurate analysis even in complex bathroom layouts.
+The high thinking level ensures accurate analysis even in complex bathroom layouts.
 
 ### Without GEMINI_API_KEY (Mock Mode)
 
@@ -316,12 +317,13 @@ npm run dev
 - Verify `GEMINI_API_KEY` is set in `.env`
 - Check API quota limits at https://aistudio.google.com
 - Test with mock mode first (uncheck "Gebruik AI analyse")
-- Check model availability: `gemini-2.0-flash-exp`
+- Check model availability: `gemini-3-pro-preview`
 - View detailed error logs in Flask console
 
-### Gemini Reasoning Issues
+### Gemini 3 Issues
 - Ensure you're using `google-genai>=1.0.0` (not `google-generativeai`)
-- ThinkingBudget.HIGH requires Gemini 2.0 Flash Experimental
+- Use `thinking_level="high"` (not `thinking_budget`)
+- Keep `temperature=1.0` (don't lower it - causes looping in Gemini 3)
 - Structured output requires recent API version
 - Check image file size (max 16MB)
 - Verify image format (JPEG, PNG supported)
